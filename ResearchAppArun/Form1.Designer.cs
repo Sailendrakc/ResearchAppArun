@@ -32,14 +32,19 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.OpenBtn = new System.Windows.Forms.Button();
             this.msgLbl = new System.Windows.Forms.Label();
+            this.dg1 = new System.Windows.Forms.DataGridView();
+            this.ShowFreqTable = new System.Windows.Forms.Button();
+            this.showpmewtable = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dg1)).BeginInit();
             this.SuspendLayout();
             // 
             // fileLinkTB
             // 
-            this.fileLinkTB.Location = new System.Drawing.Point(120, 22);
+            this.fileLinkTB.Location = new System.Drawing.Point(160, 27);
+            this.fileLinkTB.Margin = new System.Windows.Forms.Padding(4);
             this.fileLinkTB.Name = "fileLinkTB";
             this.fileLinkTB.ReadOnly = true;
-            this.fileLinkTB.Size = new System.Drawing.Size(356, 20);
+            this.fileLinkTB.Size = new System.Drawing.Size(473, 22);
             this.fileLinkTB.TabIndex = 1;
             this.fileLinkTB.TextChanged += new System.EventHandler(this.fileLinkTB_TextChanged);
             // 
@@ -49,9 +54,10 @@
             // 
             // OpenBtn
             // 
-            this.OpenBtn.Location = new System.Drawing.Point(13, 18);
+            this.OpenBtn.Location = new System.Drawing.Point(17, 22);
+            this.OpenBtn.Margin = new System.Windows.Forms.Padding(4);
             this.OpenBtn.Name = "OpenBtn";
-            this.OpenBtn.Size = new System.Drawing.Size(81, 23);
+            this.OpenBtn.Size = new System.Drawing.Size(108, 28);
             this.OpenBtn.TabIndex = 2;
             this.OpenBtn.Text = "OpenCSV";
             this.OpenBtn.UseVisualStyleBackColor = true;
@@ -61,23 +67,61 @@
             // 
             this.msgLbl.AutoSize = true;
             this.msgLbl.ForeColor = System.Drawing.Color.Red;
-            this.msgLbl.Location = new System.Drawing.Point(32, 325);
+            this.msgLbl.Location = new System.Drawing.Point(43, 400);
+            this.msgLbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.msgLbl.Name = "msgLbl";
-            this.msgLbl.Size = new System.Drawing.Size(51, 13);
+            this.msgLbl.Size = new System.Drawing.Size(67, 17);
             this.msgLbl.TabIndex = 3;
             this.msgLbl.Text = "Console: ";
             // 
+            // dg1
+            // 
+            this.dg1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dg1.Location = new System.Drawing.Point(46, 83);
+            this.dg1.Name = "dg1";
+            this.dg1.ReadOnly = true;
+            this.dg1.RowHeadersWidth = 51;
+            this.dg1.RowTemplate.Height = 24;
+            this.dg1.Size = new System.Drawing.Size(1121, 281);
+            this.dg1.TabIndex = 4;
+            // 
+            // ShowFreqTable
+            // 
+            this.ShowFreqTable.Location = new System.Drawing.Point(656, 26);
+            this.ShowFreqTable.Name = "ShowFreqTable";
+            this.ShowFreqTable.Size = new System.Drawing.Size(177, 24);
+            this.ShowFreqTable.TabIndex = 5;
+            this.ShowFreqTable.Text = "Show Frequency Table";
+            this.ShowFreqTable.UseVisualStyleBackColor = true;
+            this.ShowFreqTable.Click += new System.EventHandler(this.ShowFreqTable_Click);
+            // 
+            // showpmewtable
+            // 
+            this.showpmewtable.Location = new System.Drawing.Point(875, 26);
+            this.showpmewtable.Name = "showpmewtable";
+            this.showpmewtable.Size = new System.Drawing.Size(161, 23);
+            this.showpmewtable.TabIndex = 6;
+            this.showpmewtable.Text = "Show pmew table";
+            this.showpmewtable.UseVisualStyleBackColor = true;
+            this.showpmewtable.Click += new System.EventHandler(this.showpmewtable_Click);
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(929, 547);
+            this.AutoScroll = true;
+            this.ClientSize = new System.Drawing.Size(1239, 673);
+            this.Controls.Add(this.showpmewtable);
+            this.Controls.Add(this.ShowFreqTable);
+            this.Controls.Add(this.dg1);
             this.Controls.Add(this.msgLbl);
             this.Controls.Add(this.OpenBtn);
             this.Controls.Add(this.fileLinkTB);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.dg1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -88,6 +132,9 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button OpenBtn;
         private System.Windows.Forms.Label msgLbl;
+        private System.Windows.Forms.DataGridView dg1;
+        private System.Windows.Forms.Button ShowFreqTable;
+        private System.Windows.Forms.Button showpmewtable;
     }
 }
 
