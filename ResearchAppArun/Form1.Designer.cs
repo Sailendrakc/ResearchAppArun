@@ -35,6 +35,7 @@
             this.dg1 = new System.Windows.Forms.DataGridView();
             this.ShowFreqTable = new System.Windows.Forms.Button();
             this.showpmewtable = new System.Windows.Forms.Button();
+            this.showslope = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dg1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,7 +68,7 @@
             // 
             this.msgLbl.AutoSize = true;
             this.msgLbl.ForeColor = System.Drawing.Color.Red;
-            this.msgLbl.Location = new System.Drawing.Point(43, 400);
+            this.msgLbl.Location = new System.Drawing.Point(34, 627);
             this.msgLbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.msgLbl.Name = "msgLbl";
             this.msgLbl.Size = new System.Drawing.Size(67, 17);
@@ -77,12 +78,12 @@
             // dg1
             // 
             this.dg1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dg1.Location = new System.Drawing.Point(46, 83);
+            this.dg1.Location = new System.Drawing.Point(46, 117);
             this.dg1.Name = "dg1";
             this.dg1.ReadOnly = true;
             this.dg1.RowHeadersWidth = 51;
             this.dg1.RowTemplate.Height = 24;
-            this.dg1.Size = new System.Drawing.Size(1121, 281);
+            this.dg1.Size = new System.Drawing.Size(1121, 450);
             this.dg1.TabIndex = 4;
             // 
             // ShowFreqTable
@@ -105,12 +106,23 @@
             this.showpmewtable.UseVisualStyleBackColor = true;
             this.showpmewtable.Click += new System.EventHandler(this.showpmewtable_Click);
             // 
+            // showslope
+            // 
+            this.showslope.Location = new System.Drawing.Point(656, 74);
+            this.showslope.Name = "showslope";
+            this.showslope.Size = new System.Drawing.Size(177, 23);
+            this.showslope.TabIndex = 7;
+            this.showslope.Text = "Show Slope table";
+            this.showslope.UseVisualStyleBackColor = true;
+            this.showslope.Click += new System.EventHandler(this.showslope_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1239, 673);
+            this.Controls.Add(this.showslope);
             this.Controls.Add(this.showpmewtable);
             this.Controls.Add(this.ShowFreqTable);
             this.Controls.Add(this.dg1);
@@ -135,6 +147,7 @@
         private System.Windows.Forms.DataGridView dg1;
         private System.Windows.Forms.Button ShowFreqTable;
         private System.Windows.Forms.Button showpmewtable;
+        private System.Windows.Forms.Button showslope;
     }
 }
 

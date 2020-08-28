@@ -18,8 +18,9 @@ namespace ResearchAppArun
     {
 
         Dictionary<int, mew> pmewsDict = new Dictionary<int, mew>();
-        Dictionary<int, (int, frequency)> PatternCount = new Dictionary<int, (int, frequency)>();
+        Dictionary<int, frequency> PatternCount = new Dictionary<int, frequency>(); //id, (count, fclass)
         List<BaseInput> baseList = new List<BaseInput>();
+        List<List<int>> postslopeList = new List<List<int>>();
 
         public int totalWindow;
         public Form1()
@@ -55,7 +56,7 @@ namespace ResearchAppArun
 
             for (int i2 = 1; i2 < totalWindow; i2++)
             {
-                var line = lines[i2];
+                string line = lines[i2];
                 string[] values = line.Split(',');
                 string pattern = "";
                 int ncount = 0;
@@ -81,19 +82,24 @@ namespace ResearchAppArun
                             if (tmphr > 129 || tmphr < 30)
                             {
                                 pattern += '3';
+                                break;
                             }
                             if ((tmphr >= 110 && tmphr <= 129) || (tmphr >= 30 && tmphr <= 39))
                             {
                                 pattern += '2';
+                                break;
                             }
                             if ((tmphr >= 100 && tmphr <= 109) || ((tmphr >= 40 && tmphr <= 49)))
                             {
                                 pattern += '1';
+                                break;
                             }
                             if (tmphr >= 50 && tmphr <= 99)
                             {
                                 pattern += '0';
+                                break;
                             }
+                            pattern += 'N';
                             break;
                         case 2: //T
                             float tmpfloat = float.Parse(values[i]);
@@ -113,6 +119,7 @@ namespace ResearchAppArun
                                 pattern += '0';
                                 break;
                             }
+                            pattern += 'N';
                             break;
                         case 3: //BP
                             int tmpbp = int.Parse(values[i]);
@@ -132,6 +139,7 @@ namespace ResearchAppArun
                                 pattern += '1';
                                 break;
                             }
+                            pattern += 'N';
                             break;
                         case 4: //RR
                             int tmprr = int.Parse(values[i]);
@@ -156,6 +164,7 @@ namespace ResearchAppArun
                                 pattern += '0';
                                 break;
                             }
+                            pattern += 'N';
                             break;
                         case 5: //SPO2
                             int tmpspo2 = int.Parse(values[i]);
@@ -180,6 +189,7 @@ namespace ResearchAppArun
                                 pattern += '0';
                                 break;
                             }
+                            pattern += 'N';
                             break;
                         default: // will not happen
                             break;
@@ -202,16 +212,13 @@ namespace ResearchAppArun
                     var old = PatternCount[patternid];
 
                     //increase count
-                    int newcount = (old.Item1 + 1);
+                    old.count += 1;
 
                     //add new time 
-                    old.Item2.times.Add(time);
+                    old.times.Add(time);
 
                     //update freqpercentage
-                    old.Item2.freqPercentage = Math.Round(((double)(newcount + 100) / totalWindow), 1, MidpointRounding.ToEven);
-
-                    //update tuple
-                    PatternCount[patternid] = (newcount, old.Item2);
+                    old.freqPercentage = Math.Round((double)((old.count*100)/ totalWindow), 1, MidpointRounding.ToEven);
 
                     //no need to change mew
                     continue;
@@ -225,12 +232,12 @@ namespace ResearchAppArun
                     frequency f = new frequency();
                     f.totalWindow = totalWindow;
                     f.freqPercentage = freqper;
-                    f.patterncount = 1;
+                    f.count = 1;
                     f.patternno = patternid;
                     f.pattern = pattern;
-
+                    f.times.Add(time);
                     //add to dict
-                    PatternCount.Add(patternid, (1, f));
+                    PatternCount.Add(patternid, f);
 
                     //calculate the mew for this freq
                     int mews = 0;
@@ -268,15 +275,15 @@ namespace ResearchAppArun
             }
 
             //calculate final trend table
-            foreach (var item in PatternCount.Values)
+            foreach (var item in PatternCount)
             {
-                if (item.Item2.times.Count < 2)
+                if (item.Value.count < 2)
                 {
                     continue;
                 }
 
-                double trend = ((item.Item2.times.Last() - item.Item2.times.First()) / (item.Item2.times.Count - 1));
-                item.Item2.trendvalue = trend;
+                double trend = ((item.Value.times.Last() - item.Value.times.First()) / (item.Value.count- 1));
+                item.Value.trendvalue = trend;
             }
         }
 
@@ -285,62 +292,85 @@ namespace ResearchAppArun
             double timemean = 0;
 
             var x = baseList.Count - (baseList.Count % n); //portion per n
-            var oldt = 0;
-            var t = n*x; //time
-            if(baseList.Count - t < x)
-            {
-                t = baseList.Count;
-            }
+
+            List<int> timelist = new List<int>();
+            timelist.Add(000000);
+            int temphigh = 0;
 
             for (int i = 1; i <=n ; i++)
             {
+                temphigh = n * x;
+                if (baseList.Count - temphigh < x)
+                {
+                    temphigh = baseList.Count;
+                }
+                timelist.Add(temphigh);
                 timemean += (timemean + (timemean * i));
             }
 
+            postslopeList.Add(timelist);
             timemean = timemean / n; //mean of time
 
-            int[,] postslopetable = new int[n+1, PatternCount.Count+1];
-
             //calculation of // time * id table
-            for (int i = 1; i <= n; i++)
+            for (int i = 0; i < PatternCount.Count; i++)
             {
-                postslopetable[i, 0] = i; // time header
+                var item = PatternCount[i]; // we got frequency class here
 
-                for (int i1 = 0; i1 < PatternCount.Count; i1++)
+                List<int> incount = new List<int>();
+                incount.Add(item.patternno);
+
+                var low = 0;
+                var high = x;
+
+                if (baseList.Count - high < x)
                 {
-                    var item = PatternCount[i1];
-                    postslopetable[0, i1] = item.Item2.patternno; // pattern ID header
+                    high = baseList.Count;
+                }
 
-                    int count = 0; // number of repettition this item's patternno ie. item.Item2.patternno;
+                // now calculate its occourances for n intervals and filter
+                for (int i1 = 0; i1 < n; i1++)
+                {
+                    int count = 0; // number of occ in this n interval
 
-                    foreach (var ite in item.Item2.times)
+                    foreach (var ite in item.times)
                     {
-                        if (ite >= oldt && ite < t)
+                        if (ite >= low && ite < high)
                         {
                             count += 1;
                         }
                     }
 
-                    if (count > 1)
+                    incount.Add(count);
+
+                    low = high;
+                    high = n * x;
+                    if (baseList.Count - high < x)
                     {
-                        //tempdict.Add((item.Item2.patternno, i), count); // id , time , repeation
-                        postslopetable[i, (i1 + 1)] = count;
+                        high = baseList.Count;
                     }
                 }
 
-                oldt = t;
-                n += 1;
-                t = n * x;
-                if (baseList.Count - t < x)
+                //here we have to filter the list
+                int totalcount = 0;
+
+                for (int i2 = 1; i2 < incount.Count; i2++)
                 {
-                    t = baseList.Count;
+                    if (incount[i2] != 0)
+                    {
+                        totalcount += 1;
+                    }
+                }
+
+
+                // occoured only in one interval ignore it
+                //else do smthing about it.
+                if (totalcount > 1) 
+                {
+                    postslopeList.Add(incount);
                 }
             }
 
-            //now for second column
-
            
-
         }
 
         public void showfrequencytable()
@@ -367,22 +397,22 @@ namespace ResearchAppArun
             {
                 int colm = 0;
 
-                rowvalues[colm] = item.Item2.pattern;
+                rowvalues[colm] = item.pattern;
                 colm += 1;
 
-                rowvalues[colm] = item.Item2.patternno;
+                rowvalues[colm] = item.patternno;
                 colm += 1;
 
-                rowvalues[colm] = item.Item2.patterncount;
+                rowvalues[colm] = item.count;
                 colm += 1;
 
                 rowvalues[colm] = totalWindow; // it is same 
                 colm += 1;
 
-                rowvalues[colm] = item.Item2.freqPercentage;
+                rowvalues[colm] = item.freqPercentage;
                 colm += 1;
 
-                rowvalues[colm] = item.Item2.trendvalue;
+                rowvalues[colm] = item.trendvalue;
 
                 //now add the rowvalues as a row.
                 dt.Rows.Add(rowvalues);
@@ -421,6 +451,57 @@ namespace ResearchAppArun
             dg1.DataSource = dt;
         }
 
+        public void showslopetable()
+        {
+            if(postslopetable.Length == 0)
+            {
+                return;
+                //nothing to show
+            }
+
+            DataTable dt = new DataTable();
+
+            //read multidimention array row by row
+            object[] line = new object[postslopetable.GetLength(1)];
+
+            foreach (var item in postslopetable[])
+            {
+
+            }
+
+            for (int i = 0; i < postslopetable.GetLength(0); i++) //row
+            {
+
+
+
+                for (int i1 = 0; i1 < postslopetable.GetLength(1); i1++) //column
+                {
+                    if(i ==0 && i1 == 0) // first row
+                    {
+                        dt.Columns.Add("Time", typeof(string));
+                        continue;
+                    }
+
+                    if(i == 0) // first row
+                    {
+                        //first row.. make header out of it
+                        dt.Columns.Add(postslopetable[i, i1].ToString(), typeof(int));
+                        continue;
+                    }
+
+                    if(i >= 1) //other row
+                    {
+                        dt.
+                    }
+                }
+            }
+
+
+
+            //write headers
+            dt.Columns.Add()
+        }
+
         private void fileLinkTB_TextChanged(object sender, EventArgs e)
         {
 
@@ -438,7 +519,7 @@ namespace ResearchAppArun
         {
             public string pattern;
             public int patternno;
-            public int patterncount;
+            public int count;
             public int totalWindow;
             public double freqPercentage;
 
@@ -470,6 +551,11 @@ namespace ResearchAppArun
         private void showpmewtable_Click(object sender, EventArgs e)
         {
             showpmewstable();
+        }
+
+        private void showslope_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
