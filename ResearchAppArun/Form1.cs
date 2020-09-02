@@ -513,7 +513,7 @@ namespace ResearchAppArun
                     case 4: //RR
                         int tmprr = int.Parse(values[i]);
                         //>35,7	31-35	21-30	9-20
-                        if (tmprr > 35 || tmprr < 7)
+                        if (tmprr > 35 || tmprr < 8)
                         {
                             pattern += '3';
                             break;
