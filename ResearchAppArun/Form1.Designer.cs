@@ -28,9 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.fileLinkTB = new System.Windows.Forms.TextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.OpenBtn = new System.Windows.Forms.Button();
@@ -39,9 +36,14 @@
             this.ShowFreqTable = new System.Windows.Forms.Button();
             this.showpmewtable = new System.Windows.Forms.Button();
             this.showslope = new System.Windows.Forms.Button();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.TlineLBL = new System.Windows.Forms.Label();
+            this.BtnShowAll = new System.Windows.Forms.Button();
+            this.parmInput = new System.Windows.Forms.TextBox();
+            this.LBLparmInput = new System.Windows.Forms.Label();
+            this.Btnslide = new System.Windows.Forms.Button();
+            this.BtnParmSubmit = new System.Windows.Forms.Button();
+            this.BtnEntryRule = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dg1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
             // fileLinkTB
@@ -72,7 +74,7 @@
             // 
             this.msgLbl.AutoSize = true;
             this.msgLbl.ForeColor = System.Drawing.Color.Red;
-            this.msgLbl.Location = new System.Drawing.Point(43, 596);
+            this.msgLbl.Location = new System.Drawing.Point(43, 647);
             this.msgLbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.msgLbl.Name = "msgLbl";
             this.msgLbl.Size = new System.Drawing.Size(67, 17);
@@ -82,7 +84,7 @@
             // dg1
             // 
             this.dg1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dg1.Location = new System.Drawing.Point(46, 117);
+            this.dg1.Location = new System.Drawing.Point(46, 183);
             this.dg1.Name = "dg1";
             this.dg1.ReadOnly = true;
             this.dg1.RowHeadersWidth = 51;
@@ -92,7 +94,7 @@
             // 
             // ShowFreqTable
             // 
-            this.ShowFreqTable.Location = new System.Drawing.Point(656, 26);
+            this.ShowFreqTable.Location = new System.Drawing.Point(863, 26);
             this.ShowFreqTable.Name = "ShowFreqTable";
             this.ShowFreqTable.Size = new System.Drawing.Size(177, 24);
             this.ShowFreqTable.TabIndex = 5;
@@ -102,7 +104,7 @@
             // 
             // showpmewtable
             // 
-            this.showpmewtable.Location = new System.Drawing.Point(875, 26);
+            this.showpmewtable.Location = new System.Drawing.Point(777, 67);
             this.showpmewtable.Name = "showpmewtable";
             this.showpmewtable.Size = new System.Drawing.Size(161, 23);
             this.showpmewtable.TabIndex = 6;
@@ -112,7 +114,7 @@
             // 
             // showslope
             // 
-            this.showslope.Location = new System.Drawing.Point(656, 74);
+            this.showslope.Location = new System.Drawing.Point(963, 67);
             this.showslope.Name = "showslope";
             this.showslope.Size = new System.Drawing.Size(177, 23);
             this.showslope.TabIndex = 7;
@@ -120,21 +122,70 @@
             this.showslope.UseVisualStyleBackColor = true;
             this.showslope.Click += new System.EventHandler(this.showslope_Click);
             // 
-            // chart1
+            // TlineLBL
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(191, 636);
-            this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(833, 351);
-            this.chart1.TabIndex = 8;
-            this.chart1.Text = "chart1";
+            this.TlineLBL.AutoSize = true;
+            this.TlineLBL.Location = new System.Drawing.Point(14, 73);
+            this.TlineLBL.Name = "TlineLBL";
+            this.TlineLBL.Size = new System.Drawing.Size(86, 17);
+            this.TlineLBL.TabIndex = 9;
+            this.TlineLBL.Text = "Total Lines: ";
+            // 
+            // BtnShowAll
+            // 
+            this.BtnShowAll.Location = new System.Drawing.Point(656, 27);
+            this.BtnShowAll.Name = "BtnShowAll";
+            this.BtnShowAll.Size = new System.Drawing.Size(161, 23);
+            this.BtnShowAll.TabIndex = 10;
+            this.BtnShowAll.Text = "Show All data";
+            this.BtnShowAll.UseVisualStyleBackColor = true;
+            this.BtnShowAll.Click += new System.EventHandler(this.BtnShowAll_Click);
+            // 
+            // parmInput
+            // 
+            this.parmInput.Location = new System.Drawing.Point(411, 74);
+            this.parmInput.Name = "parmInput";
+            this.parmInput.Size = new System.Drawing.Size(222, 22);
+            this.parmInput.TabIndex = 11;
+            // 
+            // LBLparmInput
+            // 
+            this.LBLparmInput.AutoSize = true;
+            this.LBLparmInput.Location = new System.Drawing.Point(160, 73);
+            this.LBLparmInput.Name = "LBLparmInput";
+            this.LBLparmInput.Size = new System.Drawing.Size(250, 17);
+            this.LBLparmInput.TabIndex = 12;
+            this.LBLparmInput.Text = "Enter: Start, Jump, Len, End, ndivision";
+            // 
+            // Btnslide
+            // 
+            this.Btnslide.Location = new System.Drawing.Point(1065, 27);
+            this.Btnslide.Name = "Btnslide";
+            this.Btnslide.Size = new System.Drawing.Size(75, 23);
+            this.Btnslide.TabIndex = 13;
+            this.Btnslide.Text = "slide";
+            this.Btnslide.UseVisualStyleBackColor = true;
+            this.Btnslide.Click += new System.EventHandler(this.Btnslide_Click);
+            // 
+            // BtnParmSubmit
+            // 
+            this.BtnParmSubmit.Location = new System.Drawing.Point(640, 72);
+            this.BtnParmSubmit.Name = "BtnParmSubmit";
+            this.BtnParmSubmit.Size = new System.Drawing.Size(75, 23);
+            this.BtnParmSubmit.TabIndex = 14;
+            this.BtnParmSubmit.Text = "submit";
+            this.BtnParmSubmit.UseVisualStyleBackColor = true;
+            this.BtnParmSubmit.Click += new System.EventHandler(this.BtnParmSubmit_Click);
+            // 
+            // BtnEntryRule
+            // 
+            this.BtnEntryRule.Location = new System.Drawing.Point(46, 118);
+            this.BtnEntryRule.Name = "BtnEntryRule";
+            this.BtnEntryRule.Size = new System.Drawing.Size(124, 31);
+            this.BtnEntryRule.TabIndex = 15;
+            this.BtnEntryRule.Text = "Apply Entry rule";
+            this.BtnEntryRule.UseVisualStyleBackColor = true;
+            this.BtnEntryRule.Click += new System.EventHandler(this.BtnEntryRule_Click);
             // 
             // Form1
             // 
@@ -142,7 +193,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1239, 673);
-            this.Controls.Add(this.chart1);
+            this.Controls.Add(this.BtnEntryRule);
+            this.Controls.Add(this.BtnParmSubmit);
+            this.Controls.Add(this.Btnslide);
+            this.Controls.Add(this.LBLparmInput);
+            this.Controls.Add(this.parmInput);
+            this.Controls.Add(this.BtnShowAll);
+            this.Controls.Add(this.TlineLBL);
             this.Controls.Add(this.showslope);
             this.Controls.Add(this.showpmewtable);
             this.Controls.Add(this.ShowFreqTable);
@@ -155,7 +212,6 @@
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dg1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -170,7 +226,13 @@
         private System.Windows.Forms.Button ShowFreqTable;
         private System.Windows.Forms.Button showpmewtable;
         private System.Windows.Forms.Button showslope;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.Label TlineLBL;
+        private System.Windows.Forms.Button BtnShowAll;
+        private System.Windows.Forms.TextBox parmInput;
+        private System.Windows.Forms.Label LBLparmInput;
+        private System.Windows.Forms.Button Btnslide;
+        private System.Windows.Forms.Button BtnParmSubmit;
+        private System.Windows.Forms.Button BtnEntryRule;
     }
 }
 
