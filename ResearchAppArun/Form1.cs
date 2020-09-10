@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -18,6 +19,7 @@ namespace ResearchAppArun
     {
         Dictionary<int, frequency> FrequencyDict = new Dictionary<int, frequency>(); //id, (count, fclass)
         List<BaseInput> baseList = new List<BaseInput>();
+        Dictionary<int, List<int>> rankDict = new Dictionary<int, List<int>>(); // rank and list of id
 
         int totalWindow = 0;
         int slideStart = 0;
@@ -27,6 +29,7 @@ namespace ResearchAppArun
         int ndivision = 0;
 
         bool parmGiven = false;
+        double trendMedian = 0;
 
         public Form1()
         {
@@ -185,28 +188,38 @@ namespace ResearchAppArun
                 {
                     int featurecount = 0;
 
+                    //entry mew>4 condition
                     if (item.Value.mews < 4)
                     {
                         continue;
                     }
 
-                    if(item.Value.trust > 0.5d)
+                    // trust feature
+                    if(item.Value.trust >= 0.5d)
                     {
                         featurecount += 1;
                     }
                     rowvaleus[5] = item.Value.trust;
 
+                    //frequecny percentage feature
                     if(item.Value.freqPercentage > 50d)
                     {
                         featurecount += 1;
                     }
                     rowvaleus[6] = item.Value.freqPercentage;
 
+                    //frequency table
                     rowvaleus[7] = item.Value.getCount();
-                    //if(item.Value.trendvalue) -- not undertood
 
-                    rowvaleus[8] = 0; // for now -------------
+                    //trend feature
+                    if(item.Value.trendvalue >= trendMedian)
+                    {
+                        featurecount += 1;
+                    }
 
+                    rowvaleus[8] = item.Value.trendvalue; 
+
+                    //slope feature
                     var res = calculateSlope(ndivision, item.Key);
 
                     if(res.Item1 && res.Item2 > 0d)
@@ -217,6 +230,20 @@ namespace ResearchAppArun
 
 
                     rowvaleus[4] = featurecount;
+
+                    //add to rank dict here 
+
+                    List<int> idlist;
+                    if(rankDict.TryGetValue(featurecount, out idlist))
+                    {
+                        idlist.Add(item.Key);
+                    }
+                    else
+                    {
+                        idlist = new List<int>();
+                        idlist.Add(item.Key);
+                        rankDict.Add(featurecount, idlist);
+                    }
                 }
 
                 rowvaleus[0] = item.Value.bi.pattern;
@@ -482,22 +509,22 @@ namespace ResearchAppArun
                             int tmphr = int.Parse(values[i]);
                             HeartRate = tmphr;
 
-                            if (tmphr > 129 || tmphr < 30)
+                            if (tmphr >= 130)
                             {
                                 pattern += '3';
                                 break;
                             }
-                            if ((tmphr >= 110 && tmphr <= 129) || (tmphr >= 30 && tmphr <= 39))
+                            if ((tmphr >= 111 && tmphr <= 129) || tmphr <= 40)
                             {
                                 pattern += '2';
                                 break;
                             }
-                            if ((tmphr >= 100 && tmphr <= 109) || ((tmphr >= 40 && tmphr <= 49)))
+                            if ((tmphr >= 101 && tmphr <= 110) || ((tmphr >= 41 && tmphr <= 50)))
                             {
                                 pattern += '1';
                                 break;
                             }
-                            if (tmphr >= 50 && tmphr <= 99)
+                            if (tmphr >= 51 && tmphr <= 100) //(51 to 100)
                             {
                                 pattern += '0';
                                 break;
@@ -505,21 +532,16 @@ namespace ResearchAppArun
                             pattern += 'N';
                             break;
                         case 2: //T
-                            float tmpfloat = float.Parse(values[i]);
+                            double tmpfloat = double.Parse(values[i], CultureInfo.InvariantCulture);
                             Temperature = tmpfloat;
 
-                            if (tmpfloat > 38.9 || (tmpfloat >= 34 && tmpfloat <= 34.9))
+                            if (tmpfloat > 38.5 || tmpfloat < 35)
                             {
                                 pattern += '2';
                                 break;
                             }
-                            //	38-38.9	36-37.9	35-35.9
-                            if ((tmpfloat >= 38 && tmpfloat <= 38.9) || (tmpfloat >= 35 && tmpfloat <= 35.9))
-                            {
-                                pattern += '1';
-                                break;
-                            }
-                            if (tmpfloat >= 36 && tmpfloat <= 37.9)
+
+                            if (tmpfloat >= 35 && tmpfloat <= 38.4)
                             {
                                 pattern += '0';
                                 break;
@@ -530,20 +552,24 @@ namespace ResearchAppArun
                             int tmpbp = int.Parse(values[i]);
                             BloodPressure = tmpbp;
 
-                            //100-199	80-99	70-79	<70
                             if (tmpbp < 70)
                             {
                                 pattern += '3';
                                 break;
                             }
-                            if ((tmpbp >= 70 && tmpbp <= 79) || tmpbp > 199)
+                            if ((tmpbp >= 71 && tmpbp <= 80) || tmpbp >= 200)
                             {
                                 pattern += '2';
                                 break;
                             }
-                            if (tmpbp >= 80 && tmpbp <= 99)
+                            if (tmpbp >= 81 && tmpbp <= 100)
                             {
                                 pattern += '1';
+                                break;
+                            }
+                            if (tmpbp >= 101 && tmpbp <= 199)
+                            {
+                                pattern += '0';
                                 break;
                             }
                             pattern += 'N';
@@ -551,33 +577,34 @@ namespace ResearchAppArun
                         case 4: //RR
                             int tmprr = int.Parse(values[i]);
                             RespirationRate = tmprr;
-                            //>35,7	31-35	21-30	9-20
-                            if (tmprr > 35 || tmprr < 8)
+                           
+                            if (tmprr >= 30)
                             {
                                 pattern += '3';
                                 break;
                             }
-                            if (tmprr >= 31 && tmprr <= 35)
+
+                            if ((tmprr >= 21 && tmprr <= 29) || tmprr <= 9)
                             {
                                 pattern += '2';
                                 break;
                             }
-                            if (tmprr >= 21 && tmprr <= 30)
+                            if (tmprr >= 15 && tmprr <= 20)
                             {
                                 pattern += '1';
                                 break;
                             }
-                            if (tmprr >= 9 && tmprr <= 20)
+                            if (tmprr >= 9 && tmprr <= 14)
                             {
                                 pattern += '0';
                                 break;
                             }
                             pattern += 'N';
                             break;
-                        case 5: //SPO2
+                        case 5: //SPO2 ######
                             int tmpspo2 = int.Parse(values[i]);
                             Spo2 = tmpspo2;
-                            //<85	85-89	90-92	>92
+                           
                             if (tmpspo2 < 85)
                             {
                                 pattern += '3';
@@ -588,12 +615,12 @@ namespace ResearchAppArun
                                 pattern += '2';
                                 break;
                             }
-                            if (tmpspo2 >= 90 && tmpspo2 <= 92)
+                            if (tmpspo2 >= 90 && tmpspo2 <= 93)
                             {
                                 pattern += '1';
                                 break;
                             }
-                            if (tmpspo2 > 92)
+                            if (tmpspo2 > 94)
                             {
                                 pattern += '0';
                                 break;
@@ -717,10 +744,23 @@ namespace ResearchAppArun
                 }
             }
 
+            trendMedian = 0; //reset before calculating again
+            double trendsum = 0;
+            int trendcount = 0;
+
             foreach (var item in FrequencyDict)
             {
                 item.Value.PrepareForTable(slideLen);
+
+                if(item.Value.trendvalue > 0)
+                {
+                    trendcount += 1;
+                    trendsum += item.Value.trendvalue;
+                }
             }
+
+            //calculate trend median here
+            trendMedian = trendsum / trendcount;
         }
 
         private void BtnShowAll_Click(object sender, EventArgs e)
@@ -738,6 +778,8 @@ namespace ResearchAppArun
             }
 
             FrequencyDict.Clear();
+            trendMedian = 0;
+            rankDict.Clear();
 
             if(slideStart + slideJump > slideEnd || slideStart == slideEnd || slideStart + slideLen > slideEnd)
             {
@@ -788,6 +830,102 @@ namespace ResearchAppArun
             }
             dg1.Visible = true;
             showpmewstable(true);
+        }
+
+        private void BtnRank_Click(object sender, EventArgs e)
+        {
+            if (!parmGiven)
+            {
+                msgLbl.Text = "Please provide the parameters";
+                return;
+            }
+
+            if(rankDict.Count < 1)
+            {
+                foreach (var item in FrequencyDict)
+                {
+                    int featurecount = 0;
+
+                    //entry mew>4 condition
+                    if (item.Value.mews < 4)
+                    {
+                        continue;
+                    }
+
+                    // trust feature
+                    if (item.Value.trust >= 0.5d)
+                    {
+                        featurecount += 1;
+                    }
+
+                    //frequecny percentage feature
+                    if (item.Value.freqPercentage > 50d)
+                    {
+                        featurecount += 1;
+                    }
+
+
+                    //trend feature
+                    if (item.Value.trendvalue >= trendMedian)
+                    {
+                        featurecount += 1;
+                    }
+
+
+                    //slope feature
+                    var res = calculateSlope(ndivision, item.Key);
+
+                    if (res.Item1 && res.Item2 > 0d)
+                    {
+                        featurecount += 1;
+                    }
+
+                    //add to rank dict here 
+                    List<int> idlist;
+                    if (rankDict.TryGetValue(featurecount, out idlist))
+                    {
+                        idlist.Add(item.Key);
+                    }
+                    else
+                    {
+                        idlist = new List<int>();
+                        idlist.Add(item.Key);
+                        rankDict.Add(featurecount, idlist);
+                    }
+                }
+            }
+
+            //if still no ranks.. nothing to show so return.. this is 
+            //unlikely to happen
+            if(rankDict.Count < 1)
+            {
+
+                msgLbl.Text = "Error on calcuating rank.";
+                return;
+            }
+
+            dg1.DataSource = null;
+            DataTable dt = new DataTable();
+
+            //add headers
+            dt.Columns.Add("Rank", typeof(string));
+            dt.Columns.Add("PatternID", typeof(int));
+
+            //add data
+            object[] rowvaleus = new object[2];
+
+            foreach (var item in rankDict)
+            {
+                foreach (var id in item.Value)
+                {
+                    rowvaleus[0] = "Rank " + item.Key;
+                    rowvaleus[1] = id;
+                }
+
+                dt.Rows.Add(rowvaleus);
+            }
+
+            dg1.DataSource = dt;
         }
     }
 }

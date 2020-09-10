@@ -43,6 +43,7 @@
             this.Btnslide = new System.Windows.Forms.Button();
             this.BtnParmSubmit = new System.Windows.Forms.Button();
             this.BtnEntryRule = new System.Windows.Forms.Button();
+            this.BtnRank = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dg1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -187,12 +188,23 @@
             this.BtnEntryRule.UseVisualStyleBackColor = true;
             this.BtnEntryRule.Click += new System.EventHandler(this.BtnEntryRule_Click);
             // 
+            // BtnRank
+            // 
+            this.BtnRank.Location = new System.Drawing.Point(204, 118);
+            this.BtnRank.Name = "BtnRank";
+            this.BtnRank.Size = new System.Drawing.Size(120, 30);
+            this.BtnRank.TabIndex = 16;
+            this.BtnRank.Text = "Show Rank table";
+            this.BtnRank.UseVisualStyleBackColor = true;
+            this.BtnRank.Click += new System.EventHandler(this.BtnRank_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1239, 673);
+            this.Controls.Add(this.BtnRank);
             this.Controls.Add(this.BtnEntryRule);
             this.Controls.Add(this.BtnParmSubmit);
             this.Controls.Add(this.Btnslide);
@@ -233,6 +245,7 @@
         private System.Windows.Forms.Button Btnslide;
         private System.Windows.Forms.Button BtnParmSubmit;
         private System.Windows.Forms.Button BtnEntryRule;
+        private System.Windows.Forms.Button BtnRank;
     }
 }
 
