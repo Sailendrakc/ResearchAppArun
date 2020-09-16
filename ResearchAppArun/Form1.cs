@@ -19,7 +19,7 @@ namespace ResearchAppArun
     {
         Dictionary<int, frequency> FrequencyDict = new Dictionary<int, frequency>(); //id, (count, fclass)
         List<BaseInput> baseList = new List<BaseInput>();
-        Dictionary<int, List<int>> rankDict = new Dictionary<int, List<int>>(); // rank and list of id
+        Dictionary<int, List<string>> rankDict = new Dictionary<int, List<string>>(); // rank and list of id
 
         int totalWindow = 0;
         int slideStart = 0;
@@ -165,7 +165,7 @@ namespace ResearchAppArun
             dt.Columns.Add("Pattern", typeof(string));
             dt.Columns.Add("PatternID", typeof(int));
             dt.Columns.Add("Mews", typeof(int));
-            dt.Columns.Add("Mews+Trust", typeof(double));
+            dt.Columns.Add("Trust", typeof(double));
 
             //add data
             object[] rowvaleus = new object[4];
@@ -173,19 +173,20 @@ namespace ResearchAppArun
             if (Entry)
             {
                 dt.Columns.Add("FeatureCount", typeof(int));
-                dt.Columns.Add("Trust", typeof(double));
                 dt.Columns.Add("Frequecny %", typeof(double));
                 dt.Columns.Add("Frequecny", typeof(int));
                 dt.Columns.Add("Trend", typeof(double));
                 dt.Columns.Add("Slope", typeof(double));
 
-                rowvaleus = new object[10];
+                rowvaleus = new object[9];
             }
 
+            rankDict.Clear();
             foreach (var item in FrequencyDict)
             {
                 if (Entry)
                 {
+                    
                     int featurecount = 0;
 
                     //entry mew>4 condition
@@ -199,17 +200,17 @@ namespace ResearchAppArun
                     {
                         featurecount += 1;
                     }
-                    rowvaleus[5] = item.Value.trust;
+                    //rowvaleus[5] = item.Value.trust; we add turst without entry rule too.
 
                     //frequecny percentage feature
                     if(item.Value.freqPercentage > 50d)
                     {
                         featurecount += 1;
                     }
-                    rowvaleus[6] = item.Value.freqPercentage;
+                    rowvaleus[5] = item.Value.freqPercentage;
 
                     //frequency table
-                    rowvaleus[7] = item.Value.getCount();
+                    rowvaleus[6] = item.Value.getCount();
 
                     //trend feature
                     if(item.Value.trendvalue >= trendMedian)
@@ -217,31 +218,30 @@ namespace ResearchAppArun
                         featurecount += 1;
                     }
 
-                    rowvaleus[8] = item.Value.trendvalue; 
+                    rowvaleus[7] = item.Value.trendvalue; 
 
                     //slope feature
                     var res = calculateSlope(ndivision, item.Key);
 
-                    if(res.Item1 && res.Item2 > 0d)
+                    if(res.Item1 && res.Item2 >= 0d)
                     {
                         featurecount += 1;
                     }
-                    rowvaleus[9] = res.Item2;
+                    rowvaleus[8] = res.Item2;
 
 
                     rowvaleus[4] = featurecount;
 
                     //add to rank dict here 
-
-                    List<int> idlist;
-                    if(rankDict.TryGetValue(featurecount, out idlist))
+                    List<string> idlist;
+                    if (rankDict.TryGetValue(featurecount, out idlist))
                     {
-                        idlist.Add(item.Key);
+                        idlist.Add(item.Value.bi.pattern);
                     }
                     else
                     {
-                        idlist = new List<int>();
-                        idlist.Add(item.Key);
+                        idlist = new List<string>();
+                        idlist.Add(item.Value.bi.pattern);
                         rankDict.Add(featurecount, idlist);
                     }
                 }
@@ -249,7 +249,7 @@ namespace ResearchAppArun
                 rowvaleus[0] = item.Value.bi.pattern;
                 rowvaleus[1] = item.Value.bi.patternIDid;
                 rowvaleus[2] = item.Value.mews;
-                rowvaleus[3] = item.Value.MewTrust;
+                rowvaleus[3] = item.Value.trust;
 
 
                 dt.Rows.Add(rowvaleus);
@@ -456,7 +456,17 @@ namespace ResearchAppArun
             private double calculateTrust()
             {
                 //calculate total trust.
-                return (5-bi.ncount)/5d;
+                var arr = bi.pattern.ToCharArray();
+
+                int nc = 0;
+                foreach (var item in arr)
+                {
+                    if(item == 'N')
+                    {
+                        nc += 1;
+                    }
+                }
+                return (5-nc)/5d;
             }
 
             private int calculateMew()
@@ -485,7 +495,6 @@ namespace ResearchAppArun
             public int Spo2;
 
             public string pattern;
-            public int ncount;
             public int patternIDid;
 
             public BaseInput(string[] values)
@@ -496,7 +505,6 @@ namespace ResearchAppArun
                     if (values[i] == null || values[i].Trim().Length == 0)
                     {
                         pattern += 'N';
-                        ncount += 1;
                         continue;
                     }
 
@@ -765,6 +773,7 @@ namespace ResearchAppArun
 
         private void BtnShowAll_Click(object sender, EventArgs e)
         {
+            msgLbl.Text = "";
             dg1.Visible = true;
             showalltable();
         }
@@ -813,7 +822,7 @@ namespace ResearchAppArun
             }
             catch (Exception ee)
             {
-                msgLbl.Text = "ERROR: " +ee.Message;
+                msgLbl.Text = "ERROR: " +ee.ToString();
                 return;
             }
             FrequencyDict.Clear();
@@ -823,6 +832,7 @@ namespace ResearchAppArun
 
         private void BtnEntryRule_Click(object sender, EventArgs e)
         {
+            msgLbl.Text = "";
             if (!parmGiven)
             {
                 msgLbl.Text = "Please provide the parameters";
@@ -834,14 +844,17 @@ namespace ResearchAppArun
 
         private void BtnRank_Click(object sender, EventArgs e)
         {
+            msgLbl.Text = "";
             if (!parmGiven)
             {
                 msgLbl.Text = "Please provide the parameters";
                 return;
             }
 
+            //this if not working as expected for now.
             if(rankDict.Count < 1)
             {
+                msgLbl.Text = " Recalculated rank dictionery ";
                 foreach (var item in FrequencyDict)
                 {
                     int featurecount = 0;
@@ -857,6 +870,7 @@ namespace ResearchAppArun
                     {
                         featurecount += 1;
                     }
+                    //rowvaleus[5] = item.Value.trust; we add turst without entry rule too.
 
                     //frequecny percentage feature
                     if (item.Value.freqPercentage > 50d)
@@ -864,32 +878,30 @@ namespace ResearchAppArun
                         featurecount += 1;
                     }
 
-
                     //trend feature
                     if (item.Value.trendvalue >= trendMedian)
                     {
                         featurecount += 1;
                     }
 
-
                     //slope feature
                     var res = calculateSlope(ndivision, item.Key);
 
-                    if (res.Item1 && res.Item2 > 0d)
+                    if (res.Item1 && res.Item2 >= 0d)
                     {
                         featurecount += 1;
                     }
 
                     //add to rank dict here 
-                    List<int> idlist;
+                    List<string> idlist;
                     if (rankDict.TryGetValue(featurecount, out idlist))
                     {
-                        idlist.Add(item.Key);
+                        idlist.Add(item.Value.bi.pattern);
                     }
                     else
                     {
-                        idlist = new List<int>();
-                        idlist.Add(item.Key);
+                        idlist = new List<string>();
+                        idlist.Add(item.Value.bi.pattern);
                         rankDict.Add(featurecount, idlist);
                     }
                 }
@@ -900,7 +912,7 @@ namespace ResearchAppArun
             if(rankDict.Count < 1)
             {
 
-                msgLbl.Text = "Error on calcuating rank.";
+                msgLbl.Text = "Error on calcuating rank. Please first apply entry rule";
                 return;
             }
 
@@ -908,23 +920,24 @@ namespace ResearchAppArun
             DataTable dt = new DataTable();
 
             //add headers
-            dt.Columns.Add("Rank", typeof(string));
+            dt.Columns.Add("Rank", typeof(int));
+            dt.Columns.Add("Pattern", typeof(string));
             dt.Columns.Add("PatternID", typeof(int));
-
             //add data
-            object[] rowvaleus = new object[2];
+            object[] rowvaleus = new object[3];
 
             foreach (var item in rankDict)
             {
-                foreach (var id in item.Value)
+                foreach (var pattern in item.Value)
                 {
-                    rowvaleus[0] = "Rank " + item.Key;
-                    rowvaleus[1] = id;
+                    rowvaleus[0] = item.Key;
+                    rowvaleus[1] = pattern;
+                    rowvaleus[2] = pattern.GetHashCode();
+                    dt.Rows.Add(rowvaleus);
                 }
-
-                dt.Rows.Add(rowvaleus);
             }
 
+            dt.DefaultView.Sort = "Rank ASC";
             dg1.DataSource = dt;
         }
     }
