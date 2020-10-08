@@ -91,12 +91,11 @@ namespace ResearchAppArun
             dt.Columns.Add("Pattern", typeof(string));
             dt.Columns.Add("PatternNO", typeof(int));
             dt.Columns.Add("Pattern Counter", typeof(int));
-            dt.Columns.Add("Total Window", typeof(int));
             dt.Columns.Add("Frequency %", typeof(double));
             dt.Columns.Add("Trend", typeof(double));
 
             //prepare data
-            object[] rowvalues = new object[6]; // coz freq table has 5 columns + trend
+            object[] rowvalues = new object[5]; // coz freq table has 5 columns + trend
 
             foreach (var item in FrequencyDict)
             {            
@@ -111,9 +110,6 @@ namespace ResearchAppArun
                 colm += 1;
 
                 rowvalues[colm] = item.Value.getCount();
-                colm += 1;
-
-                rowvalues[colm] = totalWindow; // it is same 
                 colm += 1;
 
                 rowvalues[colm] = item.Value.freqPercentage;
@@ -146,7 +142,7 @@ namespace ResearchAppArun
             chart1.Series.Add(s);*/
         }
 
-        public void showpmewstable(bool Entry)
+        public void  showpmewstable(bool Entry)
         {
             if(baseList.Count == 0)
             {
@@ -273,6 +269,7 @@ namespace ResearchAppArun
             dg1.DataSource = null;
             DataTable dt = new DataTable();
 
+            //dt.Columns.Add("Pattern", typeof(int));
             dt.Columns.Add("PatternId", typeof(int));
             dt.Columns.Add("SlopeValue", typeof(double));          
 
@@ -810,15 +807,13 @@ namespace ResearchAppArun
 
         private void BtnParmSubmit_Click(object sender, EventArgs e)
         {
-            string[] parmInputs = parmInput.Text.Split(',');
-
             try
             {
-                slideStart = int.Parse(parmInputs[0]);
-                slideJump = int.Parse(parmInputs[1]);
-                slideLen = int.Parse(parmInputs[2]);
-                slideEnd = int.Parse(parmInputs[3]);
-                ndivision = int.Parse(parmInputs[4]);
+                slideStart = int.Parse(TBsindex.Text.Trim());
+                slideJump = int.Parse(TBjump.Text.Trim());
+                slideLen = int.Parse(TBWinLen.Text.Trim());
+                slideEnd = int.Parse(TBend.Text.Trim());
+                ndivision = int.Parse(TBequalDiv.Text.Trim());
             }
             catch (Exception ee)
             {
@@ -835,7 +830,7 @@ namespace ResearchAppArun
             msgLbl.Text = "";
             if (!parmGiven)
             {
-                msgLbl.Text = "Please provide the parameters";
+                msgLbl.Text = "Please provide the parameters. Dont forget to press 'Submit' button";
                 return;
             }
             dg1.Visible = true;
@@ -847,64 +842,8 @@ namespace ResearchAppArun
             msgLbl.Text = "";
             if (!parmGiven)
             {
-                msgLbl.Text = "Please provide the parameters";
+                msgLbl.Text = "Please provide the parameters. Dont forget to press 'Submit' button";
                 return;
-            }
-
-            //this if not working as expected for now.
-            if(rankDict.Count < 1)
-            {
-                msgLbl.Text = " Recalculated rank dictionery ";
-                foreach (var item in FrequencyDict)
-                {
-                    int featurecount = 0;
-
-                    //entry mew>4 condition
-                    if (item.Value.mews < 4)
-                    {
-                        continue;
-                    }
-
-                    // trust feature
-                    if (item.Value.trust >= 0.5d)
-                    {
-                        featurecount += 1;
-                    }
-                    //rowvaleus[5] = item.Value.trust; we add turst without entry rule too.
-
-                    //frequecny percentage feature
-                    if (item.Value.freqPercentage > 50d)
-                    {
-                        featurecount += 1;
-                    }
-
-                    //trend feature
-                    if (item.Value.trendvalue >= trendMedian)
-                    {
-                        featurecount += 1;
-                    }
-
-                    //slope feature
-                    var res = calculateSlope(ndivision, item.Key);
-
-                    if (res.Item1 && res.Item2 >= 0d)
-                    {
-                        featurecount += 1;
-                    }
-
-                    //add to rank dict here 
-                    List<string> idlist;
-                    if (rankDict.TryGetValue(featurecount, out idlist))
-                    {
-                        idlist.Add(item.Value.bi.pattern);
-                    }
-                    else
-                    {
-                        idlist = new List<string>();
-                        idlist.Add(item.Value.bi.pattern);
-                        rankDict.Add(featurecount, idlist);
-                    }
-                }
             }
 
             //if still no ranks.. nothing to show so return.. this is 
@@ -912,7 +851,7 @@ namespace ResearchAppArun
             if(rankDict.Count < 1)
             {
 
-                msgLbl.Text = "Error on calcuating rank. Please first apply entry rule";
+                msgLbl.Text = "Error on calcuating rank or no any viable rank from data. Please first apply entry rule";
                 return;
             }
 
@@ -937,8 +876,72 @@ namespace ResearchAppArun
                 }
             }
 
-            dt.DefaultView.Sort = "Rank ASC";
+            dt.DefaultView.Sort = "Rank DESC";
             dg1.DataSource = dt;
+        }
+
+        //convert to csv
+
+
+
+        public void ToCSV(ref DataTable dtDataTable, string strFilePath)
+        {
+            StreamWriter sw = new StreamWriter(strFilePath, false);
+            //headers  
+            for (int i = 0; i < dtDataTable.Columns.Count; i++)
+            {
+                sw.Write(dtDataTable.Columns[i]);
+                if (i < dtDataTable.Columns.Count - 1)
+                {
+                    sw.Write(",");
+                }
+            }
+            sw.Write(sw.NewLine);
+            foreach (DataRow dr in dtDataTable.Rows)
+            {  
+                for (int i = 0; i < dtDataTable.Columns.Count; i++)
+                {
+                    if (!Convert.IsDBNull(dr[i]))
+                    {
+                        string value = dr[i].ToString();
+                        if (value.Contains(','))
+                        {
+                            value = String.Format("\"{0}\"", value);
+                            sw.Write(value);
+                        }
+                        else
+                        {
+                            sw.Write(dr[i].ToString());
+                        }
+                    }
+                    if (i < dtDataTable.Columns.Count - 1)
+                    {
+                        sw.Write(",");
+                    }
+                }
+                sw.Write(sw.NewLine);
+            }
+            sw.Close();
+        }
+
+        private void btnToCSV_Click(object sender, EventArgs e)
+        {
+            DataTable dt = (DataTable)dg1.DataSource;
+            DialogResult result = saveFileDialog1.ShowDialog();
+            if(result == DialogResult.OK)
+            {
+                string filename = Path.GetFullPath(saveFileDialog1.FileName);
+                if(filename.Trim() != "")
+                {
+                    ToCSV(ref dt, filename);
+                    msgLbl.Text = "CSV file for active table saved! to: " + filename;
+                }
+                else
+                {
+                    msgLbl.Text = "Error retriving saving location";
+                }
+                
+            }
         }
     }
 }
