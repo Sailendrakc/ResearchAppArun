@@ -241,9 +241,9 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(46, 273);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(155, 17);
+            this.label4.Size = new System.Drawing.Size(70, 17);
             this.label4.TabIndex = 21;
-            this.label4.Text = "Process window length:";
+            this.label4.Text = "End Index";
             // 
             // TBWinLen
             // 

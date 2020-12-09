@@ -30,6 +30,7 @@ namespace ResearchAppArun
 
         bool parmGiven = false;
         double trendMedian = 0;
+        double freqMedian = 0;
 
         public Form1()
         {
@@ -89,9 +90,9 @@ namespace ResearchAppArun
 
             //prepare header 
             dt.Columns.Add("Pattern", typeof(string));
-            dt.Columns.Add("PatternNO", typeof(int));
-            dt.Columns.Add("Pattern Counter", typeof(int));
+            dt.Columns.Add("PatternID", typeof(int));
             dt.Columns.Add("Frequency %", typeof(double));
+            dt.Columns.Add("Pattern Counter", typeof(int));
             dt.Columns.Add("Trend", typeof(double));
 
             //prepare data
@@ -109,10 +110,10 @@ namespace ResearchAppArun
                 rowvalues[colm] = item.Value.bi.patternIDid;
                 colm += 1;
 
-                rowvalues[colm] = item.Value.getCount();
+                rowvalues[colm] = item.Value.freqPercentage;
                 colm += 1;
 
-                rowvalues[colm] = item.Value.freqPercentage;
+                rowvalues[colm] = item.Value.getCount();
                 colm += 1;
 
                 rowvalues[colm] = item.Value.trendvalue;
@@ -122,24 +123,6 @@ namespace ResearchAppArun
             }
 
             dg1.DataSource = dt;
-
-            //charts
-            /*Series s = new Series();
-            s.ChartType = SeriesChartType.Column;
-            //s.BorderWidth = 2;
-            s.Color = Color.Green;
-
-            List<string> Xasis = new List<string>();
-            List<double> Yasis = new List<double>();
-
-            foreach (DataRow item in dt.Rows)
-            {
-                s.Points.AddXY(item.ItemArray[1], item.ItemArray[4].ToString());
-            }
-
-
-            chart1.Series.Clear();
-            chart1.Series.Add(s);*/
         }
 
         public void  showpmewstable(bool Entry)
@@ -170,7 +153,7 @@ namespace ResearchAppArun
             {
                 dt.Columns.Add("FeatureCount", typeof(int));
                 dt.Columns.Add("Frequecny %", typeof(double));
-                dt.Columns.Add("Frequecny", typeof(int));
+                dt.Columns.Add("Pattern Counter", typeof(int));
                 dt.Columns.Add("Trend", typeof(double));
                 dt.Columns.Add("Slope", typeof(double));
 
@@ -199,17 +182,18 @@ namespace ResearchAppArun
                     //rowvaleus[5] = item.Value.trust; we add turst without entry rule too.
 
                     //frequecny percentage feature
-                    if(item.Value.freqPercentage > 50d)
+                    if(item.Value.freqPercentage > freqMedian)
                     {
                         featurecount += 1;
                     }
+
                     rowvaleus[5] = item.Value.freqPercentage;
 
                     //frequency table
                     rowvaleus[6] = item.Value.getCount();
 
                     //trend feature
-                    if(item.Value.trendvalue >= trendMedian)
+                    if(item.Value.trendvalue <= trendMedian)
                     {
                         featurecount += 1;
                     }
@@ -269,17 +253,19 @@ namespace ResearchAppArun
             dg1.DataSource = null;
             DataTable dt = new DataTable();
 
-            //dt.Columns.Add("Pattern", typeof(int));
+            dt.Columns.Add("Pattern", typeof(string));
             dt.Columns.Add("PatternId", typeof(int));
             dt.Columns.Add("SlopeValue", typeof(double));          
 
             var slopes = AllSlope(ndivision);
-            object[] o = new object[2];
+            msgLbl.Text += slopes.Count + " is the count.";
+            object[] o = new object[3];
 
             foreach (var item in slopes)
             {
-                o[0] = item.Key;
-                o[1] = item.Value;
+                o[0] = FrequencyDict[item.Key].bi.pattern;
+                o[1] = item.Key;
+                o[2] = item.Value;
 
                 dt.Rows.Add(o);
             }
@@ -288,21 +274,20 @@ namespace ResearchAppArun
 
         }
 
+        //returns sucessfulness and slope.
         public (bool, double) calculateSlope(int parts, int patternID)
         {
             frequency f = FrequencyDict[patternID];
             //find the upper bound of intervals
 
-            int intervalLen = (totalWindow - (totalWindow % parts)) / parts; //portion per n
+            int intervalLen = (slideLen - (slideLen % parts)) / parts; //portion per n
             List<int> intervalBoundList = new List<int>();
-            intervalBoundList.Add(intervalLen);
+            int meanX = 0;
 
-            int meanX = intervalLen;
-
-            for (int i = 2; i <= parts; i++)
+            for (int i = 1; i <= parts; i++)
             {
                 int bound = i * intervalLen;
-                if(totalWindow- bound < intervalLen)
+                if (totalWindow - bound < intervalLen)
                 {
                     bound = totalWindow;
                 }
@@ -334,11 +319,12 @@ namespace ResearchAppArun
                 
             }
 
-            //remove the pattern which just occoured in one of divided parts regardless of how many times
-            if(occouringintervalcount == 1)
+            /*//remove the pattern which just occoured in one of divided parts regardless of how many times
+            if (occouringintervalcount == 1)
             {
-                return (false ,0); // unsucessful
+                return (false, 0); // unsucessful
             }
+            */
 
             meanY = meanY/parts;
 
@@ -753,19 +739,30 @@ namespace ResearchAppArun
             double trendsum = 0;
             int trendcount = 0;
 
+            //calcualte freq median now
+            freqMedian = 0; //reset before calculating again
+            double freqsum = 0;
+            int freqcount = 0;
+
             foreach (var item in FrequencyDict)
             {
                 item.Value.PrepareForTable(slideLen);
 
-                if(item.Value.trendvalue > 0)
+               /* if(item.Value.trendvalue > 0)
                 {
                     trendcount += 1;
                     trendsum += item.Value.trendvalue;
-                }
+                }*/
+                trendcount += 1;
+                trendsum += item.Value.trendvalue;
+
+                freqcount += 1;
+                freqsum += item.Value.freqPercentage;
             }
 
             //calculate trend median here
             trendMedian = trendsum / trendcount;
+            freqMedian = freqsum / freqcount;
         }
 
         private void BtnShowAll_Click(object sender, EventArgs e)
@@ -839,7 +836,9 @@ namespace ResearchAppArun
 
         private void BtnRank_Click(object sender, EventArgs e)
         {
+
             msgLbl.Text = "";
+            msgLbl.Text = " ## the freqmed is: " + freqMedian + " and trendmed is: " + trendMedian;
             if (!parmGiven)
             {
                 msgLbl.Text = "Please provide the parameters. Dont forget to press 'Submit' button";
@@ -859,9 +858,10 @@ namespace ResearchAppArun
             DataTable dt = new DataTable();
 
             //add headers
-            dt.Columns.Add("Rank", typeof(int));
+
             dt.Columns.Add("Pattern", typeof(string));
             dt.Columns.Add("PatternID", typeof(int));
+            dt.Columns.Add("Rank", typeof(int));
             //add data
             object[] rowvaleus = new object[3];
 
@@ -869,15 +869,16 @@ namespace ResearchAppArun
             {
                 foreach (var pattern in item.Value)
                 {
-                    rowvaleus[0] = item.Key;
-                    rowvaleus[1] = pattern;
-                    rowvaleus[2] = pattern.GetHashCode();
+                    rowvaleus[0] = pattern;
+                    rowvaleus[1] = pattern.GetHashCode();
+                    rowvaleus[2] = item.Key;
                     dt.Rows.Add(rowvaleus);
                 }
             }
 
-            dt.DefaultView.Sort = "Rank DESC";
+            dt.DefaultView.Sort = "Rank ASC";
             dg1.DataSource = dt;
+
         }
 
         //convert to csv
@@ -921,7 +922,7 @@ namespace ResearchAppArun
                 }
                 sw.Write(sw.NewLine);
             }
-            sw.Close();
+            sw.Close();  
         }
 
         private void btnToCSV_Click(object sender, EventArgs e)
