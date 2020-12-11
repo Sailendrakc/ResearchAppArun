@@ -31,6 +31,7 @@ namespace ResearchAppArun
         bool parmGiven = false;
         double trendMedian = 0;
         double freqMedian = 0;
+        int maxfeatures = 0;
 
         public Form1()
         {
@@ -161,6 +162,7 @@ namespace ResearchAppArun
             }
 
             rankDict.Clear();
+            Dictionary<int, List<string>> rankDictCopy = new Dictionary<int, List<string>>(); // rank and list of id
             foreach (var item in FrequencyDict)
             {
                 if (Entry)
@@ -212,17 +214,25 @@ namespace ResearchAppArun
 
                     rowvaleus[4] = featurecount;
 
+                    if (featurecount > maxfeatures)
+                    {
+                        maxfeatures = featurecount;
+                    }
+
+                    item.Value.featureCountt = featurecount;
+
                     //add to rank dict here 
                     List<string> idlist;
-                    if (rankDict.TryGetValue(featurecount, out idlist))
+                    if (rankDictCopy.TryGetValue(featurecount, out idlist))
                     {
                         idlist.Add(item.Value.bi.pattern);
+                        
                     }
                     else
                     {
                         idlist = new List<string>();
                         idlist.Add(item.Value.bi.pattern);
-                        rankDict.Add(featurecount, idlist);
+                        rankDictCopy.Add(featurecount, idlist);
                     }
                 }
 
@@ -233,6 +243,11 @@ namespace ResearchAppArun
 
 
                 dt.Rows.Add(rowvaleus);
+            }
+
+            foreach (var item in rankDictCopy)
+            {
+                rankDict.Add((maxfeatures - item.Key + 1), item.Value);
             }
 
             dg1.DataSource = dt;
@@ -382,6 +397,8 @@ namespace ResearchAppArun
             public double trust = 0;
             public double MewTrust = 0;
             public double trendvalue = 0;
+            public int Rank = 0;
+            public int featureCountt = 0;
 
             //time list for trend calculation
             public List<int> times = new List<int>();
